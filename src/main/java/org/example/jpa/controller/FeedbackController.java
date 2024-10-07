@@ -1,5 +1,7 @@
 package org.example.jpa.controller;
 
+import jakarta.validation.Valid;
+import org.example.jpa.exception.ResourceNotFoundException;
 import org.example.jpa.model.Customer;
 import org.example.jpa.model.Feedback;
 import org.example.jpa.repository.CustomerRepository;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,11 +32,13 @@ public class FeedbackController {
 
     @GetMapping
     public ResponseEntity<Object> allFeedback(){
-        return new ResponseEntity<>(feedbackService.findAll(), HttpStatus.OK);
+        List<Feedback> feedbackList = feedbackService.findAll();
+        if (feedbackList.isEmpty()) throw new ResourceNotFoundException();
+        return new ResponseEntity<>(feedbackList, HttpStatus.OK);
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<Object> saveFeedback(@PathVariable("id") Long customerId, @RequestBody Feedback feedback){
+    public ResponseEntity<Object> saveFeedback(@PathVariable("id") Long customerId, @RequestBody @Valid Feedback feedback){
 
         Optional<Feedback> checkFeedback = customerService.findById(customerId).map(_customer -> {
             Feedback _feedback = new Feedback(_customer, feedback.getDescription());
@@ -47,15 +52,12 @@ public class FeedbackController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateFeedback(@PathVariable("id") Long feedbackId, @RequestBody Feedback feedback){
+    public ResponseEntity<Object> updateFeedback(@PathVariable("id") Long feedbackId, @RequestBody @Valid Feedback feedback){
 
-        Optional<Feedback> checkFeedback = feedbackService.findById(feedbackId).map(_feedback -> {
+        Feedback checkFeedback = feedbackService.findById(feedbackId).map(_feedback -> {
             _feedback.setDescription(feedback.getDescription());
             return feedbackService.save(_feedback);
-        });
-
-        if(checkFeedback.isEmpty())
-            return new ResponseEntity<>("Feedback Not Updated", HttpStatus.BAD_REQUEST);
+        }).orElseThrow(()-> new ResourceNotFoundException());
 
         return new ResponseEntity<>(checkFeedback, HttpStatus.OK);
     }
@@ -63,15 +65,12 @@ public class FeedbackController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteFeedback(@PathVariable("id") Long feedbackId){
 
-        Optional<Feedback> checkFeedback = feedbackService.findById(feedbackId).map(_feedback -> {
+        Feedback checkFeedback = feedbackService.findById(feedbackId).map(_feedback -> {
             feedbackService.deleteById(_feedback.getId());
             return _feedback;
-        });
+        }).orElseThrow(()-> new ResourceNotFoundException());
 
-        if (checkFeedback.isEmpty())
-            return new ResponseEntity<>("Feedback Not Found", HttpStatus.NOT_FOUND);
-
-        String response = String.format("Feedback: %s (deleted successfully)", checkFeedback.get().getDescription());
+        String response = String.format("Feedback: %s (deleted successfully)", checkFeedback.getDescription());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
