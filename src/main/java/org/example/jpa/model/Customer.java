@@ -2,10 +2,18 @@ package org.example.jpa.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
+@Builder // Provides a clean and readable way to create objects
+@Data    // Generates getters and setters, toString
+@AllArgsConstructor // Generate the constructor for all arguments
+@NoArgsConstructor // Generate empty constructor
 @Table(name = "customer", uniqueConstraints = {@UniqueConstraint(name = "email", columnNames = "email")})
 public class Customer {
 
@@ -15,8 +23,8 @@ public class Customer {
 
     @Column (nullable = false)
     @NotBlank(message = "Name cannot be blank.")
-    @Size(min = 3, message = "Name must be at least 3 characters.")
-    @Size(max = 255, message = "Name must not be more than 255 characters.")
+//    @Size(min = 3, message = "Name must be at least 3 characters.")
+//    @Size(max = 255, message = "Name must not be more than 255 characters.")
     private String name;
 
     @Column (nullable = false, unique = true)
@@ -27,41 +35,5 @@ public class Customer {
     @Pattern(regexp = "^\\d{8}$", message = "Phone number must be 8-digits.")
     private String phone;
 
-    public Customer() {     // create a new empty instance of Customer
-    }
-
-    public Customer(String name, String email, String phone) {
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
 
 }

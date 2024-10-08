@@ -30,9 +30,16 @@ public class CustomerController {
         return new  ResponseEntity<> (customerList, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getCustomer (@PathVariable("id") Long id){
+        Customer customer = customerService.findById(id).orElseThrow(()-> new ResourceNotFoundException());
+
+        return new ResponseEntity<>(customer, HttpStatus.OK);
+    }
+
     @PostMapping
     public ResponseEntity<Object> saveCustomer(@RequestBody @Valid Customer customer){
-        return new ResponseEntity<>(customerService.save(customer), HttpStatus.OK);
+        return new ResponseEntity<>(customerService.save(customer), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
